@@ -77,6 +77,21 @@ function app_url(string $path = ''): string
     return $base . ($path ? '/' . ltrim($path, '/') : '');
 }
 
+function absolute_app_url(string $path = ''): string
+{
+    $url = app_url($path);
+    if (preg_match('/^https?:\/\//i', $url)) {
+        return $url;
+    }
+
+    $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['SERVER_PORT'] ?? null) === '443');
+    $scheme = $https ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+    return $scheme . '://' . $host . $url;
+}
+
 function redirect(string $path): never
 {
     header('Location: ' . app_url($path));

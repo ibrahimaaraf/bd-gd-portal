@@ -5,10 +5,19 @@ $user = require_login('admin');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf();
     $userId = (int) ($_POST['user_id'] ?? 0);
+    $action = $_POST['action'] ?? 'update_user';
     $role = $_POST['role'] ?? '';
     $status = $_POST['status'] ?? '';
     if ($userId === (int) $user['id']) {
         flash('error', 'You cannot change your own account here.');
+    } elseif ($action === 'verify_nid') {
+        $stmt = db()->prepare('UPDATE users SET nid_verified = 1, nid_verified_at = NOW(), updated_at = NOW() WHERE id = ? AND nid_number IS NOT NULL');
+        $stmt->execute([$userId]);
+        flash('success', 'NID marked as verified.');
+    } elseif ($action === 'unverify_nid') {
+        $stmt = db()->prepare('UPDATE users SET nid_verified = 0, nid_verified_at = NULL, updated_at = NOW() WHERE id = ?');
+        $stmt->execute([$userId]);
+        flash('success', 'NID verification removed.');
     } elseif (!in_array($role, ['citizen', 'police', 'admin'], true) || !in_array($status, ['active', 'inactive'], true)) {
         flash('error', 'Invalid role or status.');
     } else {
@@ -19,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect('admin/manage_users.php');
 }
 
-$users = db()->query('SELECT id, name, email, phone, role, status, created_at FROM users ORDER BY created_at DESC')->fetchAll();
+$users = db()->query('SELECT id, name, email, phone, nid_number, nid_verified, nid_verified_at, role, status, created_at FROM users ORDER BY created_at DESC')->fetchAll();
 $pageTitle = 'Manage Users';
 $activeNav = 'users';
 require __DIR__ . '/../includes/header.php';
@@ -28,13 +37,24 @@ require __DIR__ . '/../includes/header.php';
 <div class="app-card table-card">
     <div class="table-responsive">
         <table class="table align-middle mb-0">
-            <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Status</th><th>Joined</th><th></th></tr></thead>
+            <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>NID</th><th>NID Status</th><th>Role</th><th>Status</th><th>Joined</th><th></th></tr></thead>
             <tbody>
             <?php foreach ($users as $row): ?>
                 <tr>
                     <td><?= e($row['name']) ?></td>
                     <td><?= e($row['email']) ?></td>
                     <td><?= e($row['phone']) ?></td>
+                    <td><?= e($row['nid_number'] ?? 'Not provided') ?></td>
+                    <td>
+                        <?php if (!$row['nid_number']): ?>
+                            <span class="badge text-bg-secondary">Not provided</span>
+                        <?php elseif ((int) $row['nid_verified'] === 1): ?>
+                            <span class="badge text-bg-success">Verified</span>
+                            <div class="small text-secondary"><?= e(date('M d, Y', strtotime($row['nid_verified_at']))) ?></div>
+                        <?php else: ?>
+                            <span class="badge text-bg-warning">Pending</span>
+                        <?php endif; ?>
+                    </td>
                     <td class="text-capitalize"><?= e($row['role']) ?></td>
                     <td class="text-capitalize"><?= e($row['status']) ?></td>
                     <td><?= e(date('M d, Y', strtotime($row['created_at']))) ?></td>
@@ -43,6 +63,7 @@ require __DIR__ . '/../includes/header.php';
                             <form class="d-flex flex-column flex-md-row gap-2" method="post">
                                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                                 <input type="hidden" name="user_id" value="<?= e((string) $row['id']) ?>">
+                                <input type="hidden" name="action" value="update_user">
                                 <select class="form-select form-select-sm" name="role">
                                     <?php foreach (['citizen', 'police', 'admin'] as $role): ?>
                                         <option value="<?= e($role) ?>" <?= $row['role'] === $role ? 'selected' : '' ?>><?= e(ucfirst($role)) ?></option>
@@ -55,6 +76,19 @@ require __DIR__ . '/../includes/header.php';
                                 </select>
                                 <button class="btn btn-sm btn-primary">Save</button>
                             </form>
+                            <?php if ($row['nid_number']): ?>
+                                <form class="mt-2" method="post">
+                                    <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                                    <input type="hidden" name="user_id" value="<?= e((string) $row['id']) ?>">
+                                    <?php if ((int) $row['nid_verified'] === 1): ?>
+                                        <input type="hidden" name="action" value="unverify_nid">
+                                        <button class="btn btn-sm btn-outline-secondary">Unverify NID</button>
+                                    <?php else: ?>
+                                        <input type="hidden" name="action" value="verify_nid">
+                                        <button class="btn btn-sm btn-outline-primary">Verify NID</button>
+                                    <?php endif; ?>
+                                </form>
+                            <?php endif; ?>
                         <?php endif; ?>
                     </td>
                 </tr>

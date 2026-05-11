@@ -21,10 +21,50 @@ function verification_token(): string
     return bin2hex(random_bytes(16));
 }
 
+function gd_verification_url(string $token): string
+{
+    return absolute_app_url('verify.php?token=' . rawurlencode($token));
+}
+
+function gd_qr_code_url(string $verificationUrl, int $size = 180): string
+{
+    $size = max(120, min(400, $size));
+    return 'https://api.qrserver.com/v1/create-qr-code/?size=' . $size . 'x' . $size . '&data=' . rawurlencode($verificationUrl);
+}
+
 function gd_by_id(int $id): ?array
 {
     $stmt = db()->prepare('SELECT gd.*, u.name AS citizen_name, u.email AS citizen_email, u.phone AS citizen_phone FROM general_diaries gd JOIN users u ON u.id = gd.user_id WHERE gd.id = ?');
     $stmt->execute([$id]);
+    return $stmt->fetch() ?: null;
+}
+
+function verified_gd_by_token_or_reference(string $token = '', string $reference = ''): ?array
+{
+    $token = trim($token);
+    $reference = trim($reference);
+
+    if ($token === '' && $reference === '') {
+        return null;
+    }
+
+    $sql = 'SELECT gd.reference_no, gd.gd_type, gd.subject, gd.status, gd.incident_date, gd.location, gd.created_at, u.name AS citizen_name
+            FROM general_diaries gd
+            JOIN users u ON u.id = gd.user_id
+            WHERE ';
+    $params = [];
+
+    if ($token !== '') {
+        $sql .= 'gd.verification_token = ?';
+        $params[] = $token;
+    } else {
+        $sql .= 'gd.reference_no = ?';
+        $params[] = $reference;
+    }
+
+    $stmt = db()->prepare($sql . ' LIMIT 1');
+    $stmt->execute($params);
+
     return $stmt->fetch() ?: null;
 }
 

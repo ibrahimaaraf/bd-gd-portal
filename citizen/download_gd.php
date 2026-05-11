@@ -10,6 +10,8 @@ if (!$gd || (int) $gd['user_id'] !== (int) $user['id']) {
 $stmt = db()->prepare('SELECT l.*, u.name FROM gd_status_logs l LEFT JOIN users u ON u.id = l.user_id WHERE gd_id = ? ORDER BY created_at ASC');
 $stmt->execute([$gd['id']]);
 $logs = $stmt->fetchAll();
+$verifyUrl = gd_verification_url($gd['verification_token']);
+$qrUrl = gd_qr_code_url($verifyUrl, 180);
 
 $pageTitle = 'GD ' . $gd['reference_no'];
 require __DIR__ . '/../includes/header.php';
@@ -26,7 +28,8 @@ require __DIR__ . '/../includes/header.php';
             <?= gd_status_badge($gd['status']) ?>
         </div>
         <div class="qr-box">
-            Verify:<br><?= e($gd['verification_token']) ?>
+            <img src="<?= e($qrUrl) ?>" alt="Verification QR code for <?= e($gd['reference_no']) ?>">
+            <span>Scan to verify<br><?= e($gd['reference_no']) ?></span>
         </div>
     </div>
     <div class="row g-3 mb-4">
@@ -36,6 +39,7 @@ require __DIR__ . '/../includes/header.php';
         <div class="col-md-6"><strong>Incident date:</strong> <?= e($gd['incident_date']) ?></div>
         <div class="col-md-6"><strong>Location:</strong> <?= e($gd['location']) ?></div>
         <div class="col-md-6"><strong>Submitted:</strong> <?= e(date('M d, Y h:i A', strtotime($gd['created_at']))) ?></div>
+        <div class="col-12"><strong>Verify online:</strong> <?= e($verifyUrl) ?></div>
     </div>
     <h3 class="h5">Subject</h3>
     <p><?= e($gd['subject']) ?></p>

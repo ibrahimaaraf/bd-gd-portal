@@ -9,19 +9,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
+    $nidNumber = preg_replace('/\D+/', '', $_POST['nid_number'] ?? '');
     $address = trim($_POST['address'] ?? '');
     $password = $_POST['password'] ?? '';
 
     if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($password) < 6) {
         flash('error', 'Provide a valid name, email, and a password of at least 6 characters.');
+    } elseif (!in_array(strlen($nidNumber), [10, 13, 17], true)) {
+        flash('error', 'Provide a valid NID number with 10, 13, or 17 digits.');
     } else {
         try {
-            $stmt = db()->prepare('INSERT INTO users (name, email, phone, address, password_hash, role) VALUES (?, ?, ?, ?, ?, "citizen")');
-            $stmt->execute([$name, $email, $phone, $address, password_hash($password, PASSWORD_DEFAULT)]);
+            $stmt = db()->prepare('INSERT INTO users (name, email, phone, nid_number, address, password_hash, role) VALUES (?, ?, ?, ?, ?, ?, "citizen")');
+            $stmt->execute([$name, $email, $phone, $nidNumber, $address, password_hash($password, PASSWORD_DEFAULT)]);
             flash('success', 'Registration complete. Please login.');
             redirect('auth/login.php');
         } catch (PDOException $e) {
-            flash('error', 'That email is already registered.');
+            flash('error', 'That email or NID number is already registered.');
         }
     }
 }
@@ -47,6 +50,11 @@ require __DIR__ . '/../includes/header.php';
                 <div class="col-md-6">
                     <label class="form-label">Phone</label>
                     <input class="form-control" name="phone">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">NID number</label>
+                    <input class="form-control" name="nid_number" inputmode="numeric" pattern="[0-9]{10}|[0-9]{13}|[0-9]{17}" maxlength="17" required>
+                    <div class="form-text">Use 10, 13, or 17 digits.</div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Password</label>

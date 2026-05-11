@@ -12,18 +12,7 @@ if ($token === '' && $reference === '') {
     exit;
 }
 
-$sql = 'SELECT reference_no, gd_type, subject, status, incident_date, created_at FROM general_diaries WHERE ';
-$params = [];
-if ($token !== '') {
-    $sql .= 'verification_token = ?';
-    $params[] = $token;
-} else {
-    $sql .= 'reference_no = ?';
-    $params[] = $reference;
-}
-$stmt = db()->prepare($sql . ' LIMIT 1');
-$stmt->execute($params);
-$gd = $stmt->fetch();
+$gd = verified_gd_by_token_or_reference($token, $reference);
 
 if (!$gd) {
     http_response_code(404);

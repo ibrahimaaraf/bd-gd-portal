@@ -12,6 +12,7 @@ $user = $user ?? current_user();
         <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
                 <li class="nav-item"><a class="nav-link <?= $activeNav === 'home' ? 'active' : '' ?>" href="<?= e(app_url('index.php')) ?>">Home</a></li>
+                <li class="nav-item"><a class="nav-link <?= $activeNav === 'verify' ? 'active' : '' ?>" href="<?= e(app_url('verify.php')) ?>">Verify GD</a></li>
                 <?php if ($user): ?>
                     <li class="nav-item"><a class="nav-link <?= $activeNav === 'dashboard' ? 'active' : '' ?>" href="<?= e(app_url(dashboard_path($user['role']))) ?>">Dashboard</a></li>
                     <?php if ($user['role'] === 'citizen'): ?>

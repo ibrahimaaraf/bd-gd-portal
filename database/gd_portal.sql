@@ -11,6 +11,9 @@ CREATE TABLE `users` (
   `name` VARCHAR(120) NOT NULL,
   `email` VARCHAR(160) NOT NULL,
   `phone` VARCHAR(30) DEFAULT NULL,
+  `nid_number` VARCHAR(17) DEFAULT NULL,
+  `nid_verified` TINYINT(1) NOT NULL DEFAULT 0,
+  `nid_verified_at` TIMESTAMP NULL DEFAULT NULL,
   `address` TEXT DEFAULT NULL,
   `password_hash` VARCHAR(255) NOT NULL,
   `role` ENUM('citizen','police','admin') NOT NULL DEFAULT 'citizen',
@@ -18,7 +21,8 @@ CREATE TABLE `users` (
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `users_email_unique` (`email`)
+  UNIQUE KEY `users_email_unique` (`email`),
+  UNIQUE KEY `users_nid_unique` (`nid_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `general_diaries` (
@@ -75,10 +79,10 @@ CREATE TABLE `poi_records` (
   CONSTRAINT `poi_user_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO `users` (`name`, `email`, `phone`, `address`, `password_hash`, `role`) VALUES
-('System Admin', 'admin@gd.test', '01700000001', 'Dhaka', '$2y$10$3jHjzMsB0ZmpDrKEhTSWEOtyG5hdSBCEWWa2pErS34dMm71yuHBku', 'admin'),
-('Duty Officer', 'police@gd.test', '01700000002', 'Model Police Station', '$2y$10$3jHjzMsB0ZmpDrKEhTSWEOtyG5hdSBCEWWa2pErS34dMm71yuHBku', 'police'),
-('Demo Citizen', 'citizen@gd.test', '01700000003', 'Dhaka, Bangladesh', '$2y$10$3jHjzMsB0ZmpDrKEhTSWEOtyG5hdSBCEWWa2pErS34dMm71yuHBku', 'citizen');
+INSERT INTO `users` (`name`, `email`, `phone`, `nid_number`, `nid_verified`, `nid_verified_at`, `address`, `password_hash`, `role`) VALUES
+('System Admin', 'admin@gd.test', '01700000001', NULL, 0, NULL, 'Dhaka', '$2y$10$3jHjzMsB0ZmpDrKEhTSWEOtyG5hdSBCEWWa2pErS34dMm71yuHBku', 'admin'),
+('Duty Officer', 'police@gd.test', '01700000002', NULL, 0, NULL, 'Model Police Station', '$2y$10$3jHjzMsB0ZmpDrKEhTSWEOtyG5hdSBCEWWa2pErS34dMm71yuHBku', 'police'),
+('Demo Citizen', 'citizen@gd.test', '01700000003', '1234567890', 1, NOW(), 'Dhaka, Bangladesh', '$2y$10$3jHjzMsB0ZmpDrKEhTSWEOtyG5hdSBCEWWa2pErS34dMm71yuHBku', 'citizen');
 
 INSERT INTO `general_diaries` (`user_id`, `reference_no`, `verification_token`, `gd_type`, `subject`, `description`, `incident_date`, `location`, `status`) VALUES
 (3, 'GD-20260426-DEMO01', 'demo-verification-token-001', 'lost_document', 'Lost National ID photocopy', 'A document copy was misplaced while travelling near Shahbag.', '2026-04-25', 'Shahbag, Dhaka', 'under_review');

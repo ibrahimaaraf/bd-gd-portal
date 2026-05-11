@@ -14,7 +14,7 @@ function current_user(): ?array
         return $user;
     }
 
-    $stmt = db()->prepare('SELECT id, name, email, phone, address, role, status, created_at FROM users WHERE id = ? LIMIT 1');
+    $stmt = db()->prepare('SELECT id, name, email, phone, nid_number, nid_verified, nid_verified_at, address, role, status, created_at FROM users WHERE id = ? LIMIT 1');
     $stmt->execute([$_SESSION['user_id']]);
     $user = $stmt->fetch() ?: null;
 

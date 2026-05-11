@@ -13,9 +13,11 @@ require __DIR__ . '/includes/header.php';
                 <div class="d-flex flex-wrap gap-2">
                     <?php if ($user): ?>
                         <a class="btn btn-primary btn-lg" href="<?= e(app_url(dashboard_path($user['role']))) ?>"><i class="bi bi-speedometer2 me-2"></i>Open Dashboard</a>
+                        <a class="btn btn-outline-primary btn-lg" href="<?= e(app_url('verify.php')) ?>"><i class="bi bi-qr-code-scan me-2"></i>Verify GD QR</a>
                     <?php else: ?>
                         <a class="btn btn-primary btn-lg" href="<?= e(app_url('auth/register.php')) ?>"><i class="bi bi-person-plus me-2"></i>Create Account</a>
                         <a class="btn btn-outline-primary btn-lg" href="<?= e(app_url('auth/login.php')) ?>"><i class="bi bi-box-arrow-in-right me-2"></i>Login</a>
+                        <a class="btn btn-outline-primary btn-lg" href="<?= e(app_url('verify.php')) ?>"><i class="bi bi-qr-code-scan me-2"></i>Verify GD QR</a>
                     <?php endif; ?>
                 </div>
             </div>
