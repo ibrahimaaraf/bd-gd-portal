@@ -4,7 +4,7 @@ $user = $user ?? current_user();
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top app-navbar">
     <div class="container">
         <a class="navbar-brand fw-bold" href="<?= e(app_url('index.php')) ?>">
-            <span class="brand-mark">GD</span> Digital GD Portal
+            <span class="brand-mark"><i class="bi bi-shield-check"></i></span> Digital GD Portal
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
